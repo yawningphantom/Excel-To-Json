@@ -4,6 +4,13 @@ var bodyParser = require('body-parser');
 var multer = require('multer');
 var xlstojson = require("xls-to-json-lc");
 var xlsxtojson = require("xlsx-to-json-lc");
+
+var regression = require('regression');
+// import regression from 'regression';
+
+
+
+
 app.use(bodyParser.json());
 var storage = multer.diskStorage({ //multers disk storage settings
   destination: function(req, file, cb) {
@@ -63,10 +70,46 @@ app.post('/upload', function(req, res) {
             data: null
           });
         }
+
+
+        //doing data manipulaiton
+        var regArray = [];
+
+        // console.log(result);
+        result.forEach(function(row) {
+          if (row['first year'] && row['second year']) {
+            regArray.push([parseInt(row['first year']), parseInt(row['second year'])])
+
+          }
+        })
+
+
+        regArray.sort(function(a, b) {
+          if (a[0] > b[0]) {
+            return 1;
+
+          } else if (a[0] < b[0]) {
+            return -1;
+          } else
+            return 0
+        })
+
+        var weight = (regression.linear(regArray)).equation[0];
+        console.log(weight);
+
+        var linearArray = [];
+        regArray.forEach(function(row) {
+          console.log(row[0]);
+          linearArray.push([row[0], weight * row[0]])
+        })
+
+
+
         res.json({
-          error_code: 0,
-          err_desc: null,
-          data: result
+          "error_code": 0,
+          "err_desc": null,
+          "regArray": regArray,
+          "linearArray": linearArray
         });
       });
     } catch (e) {
@@ -78,7 +121,7 @@ app.post('/upload', function(req, res) {
   })
 });
 
-app.use( express.static( __dirname + '/client' ));
+app.use(express.static(__dirname + '/client'));
 
 app.listen('3000', function() {
   console.log('running on 3000...');
