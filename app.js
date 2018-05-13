@@ -4,14 +4,19 @@ var bodyParser = require('body-parser');
 var multer = require('multer');
 var xlstojson = require("xls-to-json-lc");
 var xlsxtojson = require("xlsx-to-json-lc");
-
+var cors = require('cors');
 var regression = require('regression');
 // import regression from 'regression';
 
+app.use(cors());
 
-
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  next();
+});
 
 app.use(bodyParser.json());
+
 var storage = multer.diskStorage({ //multers disk storage settings
   destination: function(req, file, cb) {
     cb(null, './uploads/')
