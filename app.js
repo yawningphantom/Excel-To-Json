@@ -79,12 +79,15 @@ app.post('/upload', function(req, res) {
 
         //doing data manipulaiton
         var regArray = [];
+        var dataGraph2 = [];
 
-        // console.log(result);
         result.forEach(function(row) {
           if (row['first year'] && row['second year']) {
             regArray.push([parseInt(row['first year']), parseInt(row['second year'])])
 
+          }
+          if (parseInt(row['% of bricks'].slice(0, -1)) >= 70) {
+            dataGraph2.push([parseInt(row['% of bricks'].slice(0, -1)), parseInt(row['growth'].slice(0, -1))])
           }
         })
 
@@ -99,12 +102,20 @@ app.post('/upload', function(req, res) {
             return 0
         })
 
+        dataGraph2.sort(function(a, b) {
+          if (a[0] > b[0]) {
+            return 1;
+
+          } else if (a[0] < b[0]) {
+            return -1;
+          } else
+            return 0
+        })
+
         var weight = (regression.linear(regArray)).equation[0];
-        console.log(weight);
 
         var linearArray = [];
         regArray.forEach(function(row) {
-          console.log(row[0]);
           linearArray.push([row[0], weight * row[0]])
         })
 
@@ -114,7 +125,8 @@ app.post('/upload', function(req, res) {
           "error_code": 0,
           "err_desc": null,
           "regArray": regArray,
-          "linearArray": linearArray
+          "linearArray": linearArray,
+          "dataGraph2": dataGraph2
         });
       });
     } catch (e) {
